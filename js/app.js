@@ -94,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     transaction.oncomplete = () => {
       console.log('Cita agregada');
+      mostrarCitas();
     }
 
     transaction.onerror = () => {
@@ -106,11 +107,12 @@ document.addEventListener('DOMContentLoaded', () => {
     while(citas.firstChild) {
       citas.removeChild(citas.firstChild);
     }
-
+    
     let objectStore = DB.transaction('citas').objectStore('citas');
 
     //retorna una petición
     objectStore.openCursor().onsuccess = function(e) {
+      
       //cursor se ubica en el registro indicado para acceder  a los datos
       let cursor = e.target.result;
       console.log(cursor);
@@ -121,12 +123,30 @@ document.addEventListener('DOMContentLoaded', () => {
         citaHTML.classList.add('list-group-item');
 
         citaHTML.innerHTML = `
-          <p class="font-weight-bold">Mascota: <span class="font-weight-normal">${cursor.value.mascota}</span></p>
+        <p class="font-weight-bold">Mascota: <span class="font-weight-normal">${cursor.value.mascota}</span></p>
+        <p class="font-weight-bold">Cliente: <span class="font-weight-normal">${cursor.value.cliente}</span></p>
+        <p class="font-weight-bold">Teléfono: <span class="font-weight-normal">${cursor.value.telefono}</span></p>
+        <p class="font-weight-bold">Fecha: <span class="font-weight-normal">${cursor.value.fecha}</span></p>
+        <p class="font-weight-bold">Hora: <span class="font-weight-normal">${cursor.value.hora}</span></p>
+        <p class="font-weight-bold">Síntomas: <span class="font-weight-normal">${cursor.value.sintomas}</span></p>
         `
 
+        //Append al padre para mostrar resultados
         citas.appendChild(citaHTML);
 
+        //Consultar los siguientes registros
         cursor.continue();
+      } else {
+        if (!citas.firstChild) {
+          //Si no hay registros
+          heading.textContent = 'Agregar citas para comenzar';
+          let listado = document.createElement('p');
+          listado.classList.add('text-center');
+          listado.textContent = 'No hay registros';
+          citas.appendChild(listado);
+        } else {
+          heading.textContent = 'Administra tus citas';
+        }
       }
     }
   }
