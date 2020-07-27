@@ -27,6 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
     
     //Aignar a la base de datos
     DB = crearDB.result;
+    console.log('mostrarCitas');
+    mostrarCitas();
   }
 
   //método sólo para correr una vez y crear el Schema de la BD
@@ -99,4 +101,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function mostrarCitas() {
+    //Limpiar las citas anteriores
+    while(citas.firstChild) {
+      citas.removeChild(citas.firstChild);
+    }
+
+    let objectStore = DB.transaction('citas').objectStore('citas');
+
+    //retorna una petición
+    objectStore.openCursor().onsuccess = function(e) {
+      //cursor se ubica en el registro indicado para acceder  a los datos
+      let cursor = e.target.result;
+      console.log(cursor);
+
+      if (cursor) {
+        let citaHTML = document.createElement('li');
+        citaHTML.setAttribute('data-cita-id', cursor.value.key);
+        citaHTML.classList.add('list-group-item');
+
+        citaHTML.innerHTML = `
+          <p class="font-weight-bold">Mascota: <span class="font-weight-normal">${cursor.value.mascota}</span></p>
+        `
+
+        citas.appendChild(citaHTML);
+
+        cursor.continue();
+      }
+    }
+  }
 })
