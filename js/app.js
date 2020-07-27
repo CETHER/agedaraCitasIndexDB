@@ -123,13 +123,19 @@ document.addEventListener('DOMContentLoaded', () => {
         citaHTML.classList.add('list-group-item');
 
         citaHTML.innerHTML = `
-        <p class="font-weight-bold">Mascota: <span class="font-weight-normal">${cursor.value.mascota}</span></p>
-        <p class="font-weight-bold">Cliente: <span class="font-weight-normal">${cursor.value.cliente}</span></p>
-        <p class="font-weight-bold">Teléfono: <span class="font-weight-normal">${cursor.value.telefono}</span></p>
-        <p class="font-weight-bold">Fecha: <span class="font-weight-normal">${cursor.value.fecha}</span></p>
-        <p class="font-weight-bold">Hora: <span class="font-weight-normal">${cursor.value.hora}</span></p>
-        <p class="font-weight-bold">Síntomas: <span class="font-weight-normal">${cursor.value.sintomas}</span></p>
-        `
+          <p class="font-weight-bold">Mascota: <span class="font-weight-normal">${cursor.value.mascota}</span></p>
+          <p class="font-weight-bold">Cliente: <span class="font-weight-normal">${cursor.value.cliente}</span></p>
+          <p class="font-weight-bold">Teléfono: <span class="font-weight-normal">${cursor.value.telefono}</span></p>
+          <p class="font-weight-bold">Fecha: <span class="font-weight-normal">${cursor.value.fecha}</span></p>
+          <p class="font-weight-bold">Hora: <span class="font-weight-normal">${cursor.value.hora}</span></p>
+          <p class="font-weight-bold">Síntomas: <span class="font-weight-normal">${cursor.value.sintomas}</span></p>
+        `;
+        //crear el botón de borrar
+        const botonBorrar = document.createElement('button');
+        botonBorrar.classList.add('borrar', 'btn', 'btn-danger');
+        botonBorrar.innerHTML = '<span aria-hidden="true">x</span> Borrar';
+        botonBorrar.onclick = borrarCita;
+        citaHTML.appendChild(botonBorrar);
 
         //Append al padre para mostrar resultados
         citas.appendChild(citaHTML);
@@ -150,4 +156,30 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   }
+
+  function borrarCita(e) {
+    
+    let citaID = Number(e.target.parentElement.getAttribute('data-cita-id'));
+
+    // en IndexDB se utiizan transacciones
+    let transaction = DB.transaction(['citas'], 'readwrite');
+    let objectStore = transaction.objectStore('citas');
+    let peticion = objectStore.delete(citaID);
+
+    transaction.oncomplete = () => {
+      e.target.parentElement.parentElement.removeChild(e.target.parentElement);
+      console.log(`Se elimino la cita con el ID: ${citaID}`);
+
+      if (!citas.firstChild) {
+        heading.textContent = 'Agregar citas para comenzar';
+        let listado = document.createElement('p');
+        listado.classList.add('text-center');
+        listado.textContent = 'No hay registros';
+        citas.appendChild(listado);
+      } else {
+        heading.textContent = 'Administra tus citas';
+      }
+    }
+  }
+
 })
